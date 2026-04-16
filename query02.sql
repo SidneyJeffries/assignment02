@@ -4,13 +4,14 @@ WITH septa_bus_stop_blockgroups AS (
         '1500000US' || bg.geoid AS geoid
     FROM septa.bus_stops AS stops
     INNER JOIN census.blockgroups_2020 AS bg
-        ON ST_DWithin(
+        ON ST_DWITHIN(
             stops.geog,
-            ST_Transform(bg.geog::geometry, 4326)::geography,
+            ST_TRANSFORM(bg.geog::geometry, 4326)::geography,
             800.0
         )
     WHERE bg.geoid LIKE '42101%'
 ),
+
 septa_bus_stop_surrounding_population AS (
     SELECT
         stops.stop_id,
@@ -19,6 +20,7 @@ septa_bus_stop_surrounding_population AS (
     INNER JOIN census.population_2020 AS pop USING (geoid)
     GROUP BY stops.stop_id
 )
+
 SELECT
     stops.stop_id,
     stops.stop_name,

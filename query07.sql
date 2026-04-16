@@ -1,12 +1,12 @@
 SELECT * FROM (
     SELECT
         neighborhood_name,
+        num_bus_stops_accessible::integer AS num_bus_stops_accessible,
+        num_bus_stops_inaccessible::integer AS num_bus_stops_inaccessible,
         ROUND(
             accessible_visits::numeric / NULLIF(accessible_visits + inaccessible_visits, 0),
             4
-        ) AS accessibility_metric,
-        num_bus_stops_accessible::integer AS num_bus_stops_accessible,
-        num_bus_stops_inaccessible::integer AS num_bus_stops_inaccessible
+        ) AS accessibility_metric
     FROM (
         SELECT
             neighborhood_name,
@@ -21,7 +21,7 @@ SELECT * FROM (
                 COALESCE(v.weekly_visits, 0) AS weekly_visits
             FROM phl.neighborhoods AS n
             INNER JOIN septa.bus_stops AS s
-                ON ST_Intersects(n.geog, s.geog)
+                ON ST_INTERSECTS(n.geog, s.geog)
             LEFT JOIN (
                 SELECT
                     st.stop_id::numeric AS stop_id,
@@ -30,13 +30,15 @@ SELECT * FROM (
                 INNER JOIN (
                     SELECT
                         t.trip_id,
-                        (c.monday + c.tuesday + c.wednesday + c.thursday
-                         + c.friday + c.saturday + c.sunday) AS days_per_week
+                        (
+                            c.monday + c.tuesday + c.wednesday + c.thursday
+                            + c.friday + c.saturday + c.sunday
+                        ) AS days_per_week
                     FROM septa.bus_trips AS t
                     INNER JOIN septa.bus_calendar AS c USING (service_id)
                 ) AS tw USING (trip_id)
                 GROUP BY st.stop_id::numeric
-            ) AS v ON v.stop_id = s.stop_id
+            ) AS v ON s.stop_id = v.stop_id
             WHERE s.wheelchair_boarding IN (1, 2)
         ) AS stops_with_neighborhood
         GROUP BY neighborhood_name
