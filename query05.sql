@@ -1,11 +1,11 @@
 SELECT
     neighborhood_name,
+    num_bus_stops_accessible,
+    num_bus_stops_inaccessible,
     ROUND(
         accessible_visits::numeric / NULLIF(accessible_visits + inaccessible_visits, 0),
         4
-    ) AS accessibility_metric,
-    num_bus_stops_accessible,
-    num_bus_stops_inaccessible
+    ) AS accessibility_metric
 FROM (
     SELECT
         swn.neighborhood_name,
@@ -37,7 +37,7 @@ FROM (
                 INNER JOIN septa.bus_calendar AS c USING (service_id)
             ) AS tw USING (trip_id)
             GROUP BY st.stop_id::numeric
-        ) AS v ON v.stop_id = s.stop_id
+        ) AS v ON s.stop_id = v.stop_id
         WHERE s.wheelchair_boarding IN (1, 2)
     ) AS swn
     GROUP BY swn.neighborhood_name
