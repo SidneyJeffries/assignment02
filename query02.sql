@@ -27,4 +27,4 @@ FROM septa_bus_stop_surrounding_population AS pop
 INNER JOIN septa.bus_stops AS stops USING (stop_id)
 WHERE pop.estimated_pop_800m > 500
 ORDER BY pop.estimated_pop_800m ASC
-LIMIT 8;
+FETCH FIRST 8 ROWS WITH TIES;
