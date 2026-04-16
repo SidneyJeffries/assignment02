@@ -1,10 +1,9 @@
-
 WITH septa_bus_stop_blockgroups AS (
     SELECT
         stops.stop_id,
         '1500000US' || bg.geoid AS geoid
     FROM septa.bus_stops AS stops
-    INNER JOIN census."census.blockgroups_2020" AS bg
+    INNER JOIN census.blockgroups_2020 AS bg
         ON ST_DWithin(
             stops.geog,
             ST_Transform(bg.geog::geometry, 4326)::geography,
